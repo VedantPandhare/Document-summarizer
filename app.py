@@ -204,8 +204,38 @@ def main():
     st.markdown('<h1 class="main-header">🚀 AI Document Summarizer</h1>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">Transform any document into intelligent summaries with cutting-edge AI</p>', unsafe_allow_html=True)
     
-    # Sidebar for input method selection
+    # Initialize session state for user
+    if 'username' not in st.session_state:
+        st.session_state.username = "guest"
+    
+    # Initialize authenticated state
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    
+    # Sidebar for settings
     with st.sidebar:
+        # Login section
+        st.header("👤 Login")
+        if not st.session_state.authenticated:
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            
+            # Simple authentication (in a real app, use secure authentication)
+            if st.button("Login", key="login_button"):
+                if username and password:  # Simple check - in real app use proper auth
+                    st.session_state.authenticated = True
+                    st.session_state.username = username
+                    st.rerun()
+                else:
+                    st.error("Please enter both username and password")
+        else:
+            st.success(f"Logged in as {st.session_state.username}")
+            if st.button("Logout"):
+                st.session_state.authenticated = False
+                st.session_state.username = "guest"
+                st.rerun()
+        
+        st.markdown("---")
         st.header("📝 Input Method")
         input_method = st.radio(
             "Choose how to provide your document:",
@@ -234,19 +264,14 @@ def main():
         for ext, desc in supported_formats.items():
             st.markdown(f"**{ext.upper()}** - {desc}")
         
-        st.markdown("---")
-        st.markdown("### ℹ️ About")
-        st.markdown("""
-        **Powered by Google Gemini AI**
-        
-        **✨ Features:**
-        - Multi-format document support
-        - Intelligent text extraction
-        - Multiple summary styles
-        - Professional summaries
-        - Download & export options
-        """)
     
+    # Show main app
+    show_main_app(input_method, summary_style, style_mapping)
+
+# Login message function removed
+
+def show_main_app(input_method, summary_style, style_mapping):
+    """Show main application for authenticated users."""
     # Main content area
     col1, col2 = st.columns([1, 1])
     
@@ -378,18 +403,29 @@ def main():
                     <div class="success-box">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <span style="font-size: 1.5rem;">✅</span>
-                            <span style="font-weight: 600; color: #065f46;">
-                                Successfully extracted text from {file_info['file_name']}
-                            </span>
+                            <span style="font-weight: 600; font-size: 1.1rem;">Text Extracted Successfully!</span>
                         </div>
-                        <div style="margin-top: 0.5rem; color: #047857; font-size: 0.9rem;">
-                            Ready to generate summary! Choose your preferred style and click "Generate Summary"
+                        <div style="color: #059669; font-size: 0.95rem;">
+                            Extracted {len(extracted_text.split())} words from your document.
                         </div>
                     </div>
                 ''', unsafe_allow_html=True)
                 
-                # Document preview removed for cleaner UI
+                # Store file information in session state for database storage
+                st.session_state['document_name'] = file_info['file_name']
+                st.session_state['document_type'] = file_info['file_type']
+                st.session_state['file_size'] = file_size_bytes
                 
+                # Display extracted text in a text area for review
+                st.markdown("### 📝 Extracted Text Preview")
+                st.text_area(
+                    "Review the extracted text before summarization",
+                    value=extracted_text,
+                    height=200,
+                    help="This is the text that will be summarized. You can edit it if needed."
+                )
+                
+                # Update the input text for summarization
                 input_text = extracted_text
                 
         else:  # Paste Text
@@ -400,29 +436,71 @@ def main():
                 help="Paste any text content you want to summarize"
             )
         
+            # Store document information for pasted text
+            if input_text and input_text.strip():
+                st.session_state['document_name'] = 'Pasted Text'
+                st.session_state['document_type'] = 'text'
+                st.session_state['file_size'] = len(input_text.encode('utf-8'))
+        
         # Summarize button
         if input_text and input_text.strip():
             if st.button("🚀 Generate Summary", type="primary", use_container_width=True):
-                with st.spinner("🤖 AI is analyzing your document..."):
-                    try:
-                        # Generate summary
-                        summary = summarize_text(input_text, style_mapping[summary_style])
-                        
-                        if summary.startswith("Error"):
-                            st.markdown(f'<div class="error-box">{summary}</div>', unsafe_allow_html=True)
-                        else:
-                            # Store summary in session state for download
-                            st.session_state['current_summary'] = summary
-                            st.session_state['summary_style'] = summary_style
-                            st.session_state['timestamp'] = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                # Check if user is authenticated
+                if not st.session_state.authenticated:
+                    st.error("⚠️ Please login to generate summaries")
+                    st.info("👈 Use the login form in the sidebar")
+                else:
+                    with st.spinner("🤖 AI is analyzing your document..."):
+                        try:
+                            # Get user ID for database storage (use username)
+                            user_id = st.session_state.username
+                            document_name = st.session_state.get('document_name', 'Pasted Text')
+                            document_type = st.session_state.get('document_type', 'text')
+                            file_size = st.session_state.get('file_size', None)
                             
-                            # Evaluate summary quality
-                            quality_metrics = evaluate_summary_quality(input_text, summary)
-                            st.session_state['quality_metrics'] = quality_metrics
+                            # Generate summary and save to database
+                            from backend import summarize_text_with_db
+                            result = summarize_text_with_db(
+                                text=input_text,
+                                style=style_mapping[summary_style],
+                                user_id=user_id,
+                                document_name=document_name,
+                                document_type=document_type,
+                                file_size=file_size
+                            )
                             
-                            st.success("✅ Summary generated successfully!")
-                    except Exception as e:
-                        st.error(f"❌ An error occurred: {str(e)}")
+                            if result['success']:
+                                summary = result['summary']
+                                # Store summary in session state for download
+                                st.session_state['current_summary'] = summary
+                                st.session_state['summary_style'] = summary_style
+                                st.session_state['timestamp'] = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                                st.session_state['summary_id'] = result.get('summary_id')
+                                
+                                # Store quality metrics
+                                st.session_state['quality_metrics'] = result.get('quality_metrics', {})
+                                
+                                # Show success message with database and file info
+                                success_message = "✅ Summary generated successfully!"
+                                
+                                if result.get('summary_id'):
+                                    success_message += f" Saved to database (ID: {result['summary_id']})."
+                                
+                                if result.get('file_path'):
+                                    # Store file path in session state
+                                    st.session_state['summary_file_path'] = result['file_path']
+                                    file_dir = os.path.dirname(result['file_path'])
+                                    success_message += f" Saved to folder: {file_dir}"
+                                
+                                st.success(success_message)
+                                    
+                                # Show warning if database save failed
+                                if result.get('warning'):
+                                    st.warning(f"⚠️ {result['warning']}")
+                            else:
+                                st.error(f"❌ {result.get('error', 'An error occurred')}")
+                        except Exception as e:
+                            st.error(f"❌ An error occurred: {str(e)}")
         elif input_method == "✏️ Paste Text":
             st.info("ℹ️ Please paste some text to summarize.")
     
@@ -444,60 +522,7 @@ def main():
                 </div>
             ''', unsafe_allow_html=True)
             
-            # Display quality metrics if available
-            if 'quality_metrics' in st.session_state:
-                metrics = st.session_state['quality_metrics']
-                if 'error' not in metrics:
-                    st.markdown("---")
-                    st.markdown("### 📊 Summary Quality Analysis")
-                    
-                    # Quality score with color coding
-                    score_color = "#10b981" if metrics['quality_score'] >= 80 else "#f59e0b" if metrics['quality_score'] >= 60 else "#ef4444"
-                    st.markdown(f"""
-                        <div style="
-                            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                            border: 2px solid {score_color};
-                            border-radius: 15px;
-                            padding: 1.5rem;
-                            margin: 1rem 0;
-                        ">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                <div style="
-                                    background: {score_color};
-                                    color: white;
-                                    padding: 0.5rem 1rem;
-                                    border-radius: 10px;
-                                    font-weight: 600;
-                                    font-size: 1.2rem;
-                                ">
-                                    {metrics['quality_score']}/100
-                                </div>
-                                <div style="font-weight: 600; font-size: 1.1rem; color: {score_color};">
-                                    {metrics['overall_rating']}
-                                </div>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                <div>
-                                    <strong>Compression:</strong> {metrics['compression_ratio']}%<br>
-                                    <small style="color: #6b7280;">({metrics['summary_length']} of {metrics['original_length']} words)</small>
-                                </div>
-                                <div>
-                                    <strong>Length:</strong> {metrics['summary_length']} words<br>
-                                    <small style="color: #6b7280;">Appropriate range: 50-200 words</small>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-bottom: 1rem;">
-                                <strong>Quality Indicators:</strong>
-                                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-                                    {''.join([f'<li>{item}</li>' for item in metrics['feedback']])}
-                                </ul>
-                            </div>
-                            
-                            {f'<div style="margin-top: 1rem;"><strong>💡 Suggestions:</strong><ul style="margin: 0.5rem 0; padding-left: 1.5rem;">{''.join([f"<li>{item}</li>" for item in metrics['suggestions']])}</ul></div>' if metrics['suggestions'] else ''}
-                        </div>
-                    """, unsafe_allow_html=True)
+            # Quality metrics section removed
             
             # Download button
             st.markdown("---")
@@ -519,8 +544,75 @@ def main():
             if st.button("📋 Copy to Clipboard", use_container_width=True):
                 st.write("📋 Summary copied to clipboard!")
                 st.code(st.session_state['current_summary'])
+                
+            # Open file location button removed as requested
         else:
             st.info("ℹ️ Upload a document or paste text, then click 'Generate Summary' to see results here.")
+    
+    # User History Section - only show if authenticated
+    if st.session_state.authenticated:
+        st.markdown("---")
+        st.markdown("### 📚 Your Summary History")
+        
+        # Use username from session state
+        user_id = st.session_state.username
+        
+        # Load and display user history
+        try:
+            from backend import get_user_summary_history, get_user_statistics
+            
+            # Get user statistics
+            stats = get_user_statistics(user_id)
+            
+            # Display statistics
+            st.markdown("#### 📊 Your Summary Statistics")
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Total Summaries", stats['total_summaries'])
+            with col2:
+                st.metric("Documents Processed", stats['total_documents'])
+            with col3:
+                st.metric("Avg Quality Score", f"{stats['average_quality']}/100")
+            with col4:
+                st.metric("Total Words", f"{stats['total_words_processed']:,}")
+            
+            # Get recent summaries
+            summaries = get_user_summary_history(user_id, limit=10)
+            
+            if summaries:
+                st.markdown("#### 📝 Recent Summaries")
+                
+                for summary in summaries:
+                    with st.expander(f"📄 {summary['document_name']} ({summary['document_type']}) - {summary['created_at'][:10]}"):
+                        col1, col2 = st.columns([3, 1])
+                        
+                        with col1:
+                            st.markdown(f"**Style:** {summary['summary_style']}")
+                            if summary['quality_score']:
+                                score_color = "#10b981" if summary['quality_score'] >= 80 else "#f59e0b" if summary['quality_score'] >= 60 else "#ef4444"
+                                st.markdown(f"**Quality Score:** <span style='color: {score_color}; font-weight: bold;'>{summary['quality_score']}/100</span>", unsafe_allow_html=True)
+                            
+                            st.markdown("**Summary:**")
+                            st.text_area("", value=summary['summary'], height=150, key=f"summary_{summary['id']}", disabled=True)
+                            
+                            if summary['word_count']:
+                                st.caption(f"Original: {summary['word_count']} words | Summary: {summary['summary_word_count']} words")
+                        
+                        with col2:
+                            if st.button("🗑️ Delete", key=f"delete_{summary['id']}"):
+                                from backend import delete_user_summary
+                                if delete_user_summary(summary['id'], user_id):
+                                    st.success("Summary deleted!")
+                                    st.rerun()
+                                else:
+                                    st.error("Failed to delete summary")
+            else:
+                st.info("📚 No summaries found. Start by generating your first summary!")
+                
+        except Exception as e:
+            st.error(f"Error loading history: {str(e)}")
+            st.info("Make sure the database is properly initialized and accessible.")
     
     # Footer
     st.markdown("---")

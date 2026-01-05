@@ -3,9 +3,44 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from typing import Literal
 import re
+import time
+from database import db
 
 # Load environment variables
-load_dotenv()
+import pathlib
+
+# Try multiple methods to load .env file
+env_loaded = False
+
+# Method 1: Try relative to current file
+try:
+    env_path = pathlib.Path(__file__).parent / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+        env_loaded = True
+        print(f"DEBUG: .env loaded from {env_path}")
+except Exception as e:
+    print(f"DEBUG: Failed to load .env from file path: {e}")
+
+# Method 2: Try current working directory
+if not env_loaded:
+    try:
+        load_dotenv()
+        env_loaded = True
+        print("DEBUG: .env loaded from current directory")
+    except Exception as e:
+        print(f"DEBUG: Failed to load .env from current directory: {e}")
+
+# Method 3: Try absolute path
+if not env_loaded:
+    try:
+        abs_env_path = pathlib.Path.cwd() / '.env'
+        if abs_env_path.exists():
+            load_dotenv(abs_env_path)
+            env_loaded = True
+            print(f"DEBUG: .env loaded from absolute path {abs_env_path}")
+    except Exception as e:
+        print(f"DEBUG: Failed to load .env from absolute path: {e}")
 
 # Configure Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -172,6 +207,159 @@ def summarize_text(text: str, style: Literal["bullet", "abstract", "detailed"] =
     except Exception as e:
         return f"Error: {str(e)}"
 
+def save_summary_to_file(summary: str, user_id: str, document_name: str, style: str, timestamp: str) -> str:
+    """
+    Save the summary to a file in the summaries folder.
+    
+    Args:
+        summary (str): The summary text to save
+        user_id (str): User identifier for folder structure
+        document_name (str): Name of the document being summarized
+        style (str): The style of summary ("bullet", "abstract", or "detailed")
+        timestamp (str): Timestamp for the filename
+        
+    Returns:
+        str: Path to the saved file or error message
+    """
+    try:
+        # Create summaries directory if it doesn't exist
+        summaries_dir = os.path.join(os.getcwd(), "summaries")
+        if not os.path.exists(summaries_dir):
+            os.makedirs(summaries_dir)
+        
+        # Create user directory if it doesn't exist
+        user_dir = os.path.join(summaries_dir, user_id)
+        if not os.path.exists(user_dir):
+            os.makedirs(user_dir)
+        
+        # Create a safe filename
+        safe_doc_name = re.sub(r'[^\w\-_\. ]', '_', document_name)
+        filename = f"{safe_doc_name}_{style}_{timestamp}.txt"
+        file_path = os.path.join(user_dir, filename)
+        
+        # Write summary to file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(summary)
+        
+        return file_path
+    except Exception as e:
+        return f"Error saving summary to file: {str(e)}"
+
+def summarize_text_with_db(text: str, style: Literal["bullet", "abstract", "detailed"] = "bullet", 
+                          user_id: str = "default_user", document_name: str = "Unknown Document",
+                          document_type: str = "text", file_size: int = None) -> dict:
+    """
+    Generate a summary and save it to the database with metadata.
+    
+    Args:
+        text (str): The text to summarize
+        style (str): The style of summary ("bullet", "abstract", or "detailed")
+        user_id (str): User identifier for database storage
+        document_name (str): Name of the document being summarized
+        document_type (str): Type of document (pdf, docx, txt, etc.)
+        file_size (int): Size of the file in bytes
+        
+    Returns:
+        dict: Summary result with metadata and database info
+    """
+    start_time = time.time()
+    
+    if not text or not text.strip():
+        return {
+            "success": False,
+            "error": "No text provided for summarization",
+            "summary": None
+        }
+    
+    try:
+        # Generate summary using existing function
+        summary = summarize_text(text, style)
+        
+        if summary.startswith("Error"):
+            return {
+                "success": False,
+                "error": summary,
+                "summary": None
+            }
+        
+        # Calculate processing time and word counts
+        processing_time = time.time() - start_time
+        word_count = len(text.split())
+        summary_word_count = len(summary.split())
+        
+        # Evaluate summary quality
+        quality_metrics = evaluate_summary_quality(text, summary)
+        quality_score = quality_metrics.get('quality_score', 0)
+        
+        # Generate timestamp for file saving
+        timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+        
+        # Save to database
+        try:
+            summary_id = db.save_summary(
+                user_id=user_id,
+                document_name=document_name,
+                document_type=document_type,
+                original_text=text[:1000],  # Store first 1000 chars of original text
+                summary=summary,
+                summary_style=style,
+                quality_score=quality_score,
+                file_size=file_size,
+                processing_time=processing_time,
+                word_count=word_count,
+                summary_word_count=summary_word_count
+            )
+            
+            # Save to file
+            file_path = save_summary_to_file(
+                summary=summary,
+                user_id=user_id,
+                document_name=document_name,
+                style=style,
+                timestamp=timestamp
+            )
+            
+            return {
+                "success": True,
+                "summary": summary,
+                "summary_id": summary_id,
+                "file_path": file_path if not file_path.startswith("Error") else None,
+                "quality_metrics": quality_metrics,
+                "processing_time": round(processing_time, 2),
+                "word_count": word_count,
+                "summary_word_count": summary_word_count,
+                "message": "Summary generated and saved successfully"
+            }
+            
+        except Exception as db_error:
+            # If database save fails, still try to save to file
+            file_path = save_summary_to_file(
+                summary=summary,
+                user_id=user_id,
+                document_name=document_name,
+                style=style,
+                timestamp=timestamp
+            )
+            
+            return {
+                "success": True,
+                "summary": summary,
+                "summary_id": None,
+                "file_path": file_path if not file_path.startswith("Error") else None,
+                "quality_metrics": quality_metrics,
+                "processing_time": round(processing_time, 2),
+                "word_count": word_count,
+                "summary_word_count": summary_word_count,
+                "warning": f"Summary generated but database save failed: {str(db_error)}"
+            }
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Error during summarization: {str(e)}",
+            "summary": None
+        }
+
 def get_available_models():
     """Get list of available Gemini models."""
     try:
@@ -280,3 +468,44 @@ def get_improvement_suggestions(quality_score: int, compression_ratio: float) ->
         suggestions.append("Ensure document contains readable text content")
     
     return suggestions
+
+def get_user_summary_history(user_id: str, limit: int = 20) -> list:
+    """Get user's summary history from the database."""
+    try:
+        return db.get_user_summaries(user_id, limit)
+    except Exception as e:
+        return []
+
+def get_user_statistics(user_id: str) -> dict:
+    """Get user's summary statistics from the database."""
+    try:
+        return db.get_summary_statistics(user_id)
+    except Exception as e:
+        return {
+            "total_summaries": 0,
+            "total_documents": 0,
+            "average_quality": 0,
+            "favorite_style": "None",
+            "total_words_processed": 0
+        }
+
+def search_user_summaries(user_id: str, query: str, limit: int = 20) -> list:
+    """Search through user's summaries."""
+    try:
+        return db.search_summaries(user_id, query, limit)
+    except Exception as e:
+        return []
+
+def delete_user_summary(summary_id: int, user_id: str) -> bool:
+    """Delete a user's summary from the database."""
+    try:
+        return db.delete_summary(summary_id, user_id)
+    except Exception as e:
+        return False
+
+def get_recent_summaries(user_id: str, days: int = 7) -> list:
+    """Get user's recent summaries from the last N days."""
+    try:
+        return db.get_recent_summaries(user_id, days)
+    except Exception as e:
+        return []

@@ -1,0 +1,26 @@
+* **Project Goal:** Model a product launch decision under market uncertainty using Excel's What-If Analysis.
+
+* **Methodology:** A two-variable data table was created within Excel, analyzing the impact of varying price and quantity on total revenue and transport costs.
+
+* **Variables:**
+    * **Price:** Varied from 32 upwards (specific increments not detailed).
+    * **Quantity:** Varied from 100 to 500.
+
+* **Calculations:**
+    * **Total Revenue:** Calculated as Price x Quantity.
+    * **Transport Cost:** Calculated based on an unspecified method (percentage of revenue or per-unit cost).
+
+* **Analysis:** The data table provided a matrix showing revenue outcomes for different price/quantity combinations, allowing for:
+    * Identification of pricing strategies maximizing revenue at various quantities.
+    * Analysis of how revenue and transport costs scale with increasing quantity.
+
+* **Key Findings:** Higher prices at a fixed quantity lead to proportionally higher revenue; transport costs increase proportionally (method dependent).
+
+* **Benefits:**
+    * Visualizes risk and uncertainty in pricing decisions.
+    * Enables sensitivity analysis to identify the most profitable price/quantity combinations.
+    * Supports informed decision-making under fluctuating market conditions.
+
+* **Tools Used:** Microsoft Excel, Data Table (What-If Analysis) feature, basic arithmetic formulas.
+
+* **Conclusion:** Excel's What-If Analysis effectively modeled the impact of price and quantity on revenue and transport costs, providing valuable insights for informed product launch decisions.

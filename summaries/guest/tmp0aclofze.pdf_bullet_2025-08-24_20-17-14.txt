@@ -1,0 +1,41 @@
+**Jake Ryan - Summary of Qualifications**
+
+**I. Education:**
+
+* Bachelor of Arts in Computer Science, Minor in Business, Southwestern University (Aug 2018 - May 2021)
+* Associate in Liberal Arts, Blinn College (Aug 2014 - May 2018)
+
+**II. Experience:**
+
+* **Undergraduate Research Assistant (June 2020 - Present, Texas A&M University):**
+    * Developed a REST API (FastAPI, PostgreSQL) for storing learning management system data.
+    * Built a full-stack web application (Flask, React, PostgreSQL, Docker) for GitHub data analysis.
+    * Explored GitHub collaboration visualization in classroom settings.
+* **Information Technology Support Specialist (Sep 2018 - Present, Southwestern University):**
+    * Managed campus computer setup and maintenance (200+ printers).
+    * Provided technical support to students, faculty, and staff.
+* **Artificial Intelligence Research Assistant (May 2019 - July 2019, Southwestern University):**
+    * Developed a Java game to test Zelda-inspired dungeon generation algorithms.
+    * Contributed 50K lines of code to an existing codebase (Git).
+    * Conducted a human subject study on dungeon generation enjoyment.
+    * Presented research findings in an 8-page paper and multiple presentations (including a virtual presentation at the World Conference on Computational Intelligence).
+
+**III. Projects:**
+
+* **Gitlytics (June 2020 - Present):** Full-stack web application (Flask, React, PostgreSQL, Docker, Celery, Redis) visualizing GitHub collaboration data using GitHub OAuth.
+* **Simple Paintball (May 2018 - May 2020):** Minecraft server plugin (Java, Maven, TravisCI, Git) with 2K downloads and a 4.55-star average rating; implemented continuous delivery using TravisCI.
+
+**IV. Technical Skills:**
+
+* **Languages:** Java, Python, C++, SQL (PostgreSQL), JavaScript, HTML/CSS, R
+* **Frameworks:** React, Node.js, Flask, JUnit, WordPress, Material-UI, FastAPI
+* **Developer Tools:** Git, Docker, TravisCI, Google Cloud Platform, VS Code, Visual Studio, PyCharm, IntelliJ, Eclipse
+* **Libraries:** pandas, NumPy, Matplotlib
+
+
+**V. Contact Information:**
+
+* Phone: 123-456-7890
+* Email: jakesu.edu
+* LinkedIn: linkedin.com/in/jake
+* GitHub: github.com/jake
