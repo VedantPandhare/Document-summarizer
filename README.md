@@ -60,11 +60,6 @@ A powerful AI-powered document summarization system built with Streamlit, FastAP
 - **Quality scores** and feedback
 - **User identification** for history tracking
 
-### Database Tables
-- `summaries` - Main summary storage
-- `users` - User management (future use)
-- `summary_analytics` - Usage tracking
-
 ### Key Functions
 - **Save summaries** automatically when generated
 - **Retrieve user history** with pagination
