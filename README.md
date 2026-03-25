@@ -1,4 +1,4 @@
-[![Views](https://visitor-badge.laobi.icu/badge?page_id=piyushdhoka.drdo_docxsummarizer)](https://visitor-badge.laobi.icu/badge?page_id=piyushdhoka.drdo_docxsummarizer)
+4[![Views](https://visitor-badge.laobi.icu/badge?page_id=piyushdhoka.drdo_docxsummarizer)](https://visitor-badge.laobi.icu/badge?page_id=piyushdhoka.drdo_docxsummarizer)
 # AI Document Summarizer with Database Integration
 
 A powerful AI-powered document summarization system built with Streamlit, FastAPI, and Google Gemini AI. Now with **SQLite database integration** for storing and managing user summaries!
@@ -138,13 +138,6 @@ uvicorn fastapi_app:app --reload --host 0.0.0.0 --port 8000
 - **Interactive Docs**: http://localhost:8000/docs
 - **Alternative Docs**: http://localhost:8000/redoc
 - **Health Check**: http://localhost:8000/health
-
-## 🔒 Security Notes
-
-- User IDs are simple text identifiers (not secure authentication)
-- Database is local SQLite (no network exposure)
-- API endpoints include user ID validation
-- Consider implementing proper authentication for production use
 
 ## 🆕 What's New
 
