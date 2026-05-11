@@ -1,21 +1,20 @@
-4[![Views](https://visitor-badge.laobi.icu/badge?page_id=piyushdhoka.drdo_docxsummarizer)](https://visitor-badge.laobi.icu/badge?page_id=piyushdhoka.drdo_docxsummarizer)
+[![Views](https://visitor-badge.laobi.icu/badge?page_id=piyushdhoka.drdo_docxsummarizer)](https://visitor-badge.laobi.icu/badge?page_id=piyushdhoka.drdo_docxsummarizer)
 # AI Document Summarizer with Database Integration
 
 A powerful AI-powered document summarization system built with Streamlit, FastAPI, and Google Gemini AI. Now with **SQLite database integration** for storing and managing user summaries!
 
-## ✨ Features
+##  Features
 
-- **🤖 AI-Powered Summarization**: Uses Google Gemini AI for intelligent document analysis
-- **📁 Multi-Format Support**: PDF, DOCX, TXT, HTML, and Markdown files
-- **🎯 Multiple Summary Styles**: Bullet points, Abstract, and Detailed summaries
-- **💾 Database Storage**: SQLite database to save and retrieve user summaries
-- **📊 Quality Analysis**: Automatic summary quality assessment and feedback
-- **🔍 Search & History**: Search through previous summaries and view history
-- **📈 User Statistics**: Track your summarization usage and performance
-- **🌐 REST API**: FastAPI backend for programmatic access
-- **🎨 Modern UI**: Beautiful Streamlit interface with responsive design
+- ** AI-Powered Summarization**: Uses Google Gemini AI for intelligent document analysis
+- ** Multi-Format Support**: PDF, DOCX, TXT, HTML, and Markdown files
+- ** Multiple Summary Styles**: Bullet points, Abstract, and Detailed summaries
+- ** Database Storage**: SQLite database to save and retrieve user summaries
+- ** Quality Analysis**: Automatic summary quality assessment and feedback
+- ** Search & History**: Search through previous summaries and view history
+- ** User Statistics**: Track your summarization usage and performance
+- ** REST API**: FastAPI backend for programmatic access
 
-## 🚀 Quick Start (Windows PowerShell)
+## Quick Start (Windows PowerShell)
 
 ### Prerequisites
 - Python 3.8+
@@ -51,7 +50,7 @@ A powerful AI-powered document summarization system built with Streamlit, FastAP
    .\start_services.bat
    ```
 
-## 🗄️ Database Features
+## Database Features
 
 ### What Gets Stored
 - **Summary content** and metadata
@@ -67,7 +66,7 @@ A powerful AI-powered document summarization system built with Streamlit, FastAP
 - **User statistics** and analytics
 - **Delete summaries** when no longer needed
 
-## 📱 Usage
+## Usage
 
 ### Web Interface (Streamlit)
 1. Open http://localhost:8501
@@ -83,14 +82,13 @@ A powerful AI-powered document summarization system built with Streamlit, FastAP
 - **GET** `/user/{user_id}/search` - Search summaries
 - **DELETE** `/user/{user_id}/summary/{id}` - Delete summary
 
-## 🧪 Testing
+##  Testing
 
 Test the database functionality:
 ```powershell
 python test_database.py
 ```
-
-## 📁 Project Structure
+##  Project Structure
 
 ```
 drdo_docxsummarizer/
@@ -107,7 +105,7 @@ drdo_docxsummarizer/
     └── pdf_reader.py     # PDF-specific processing
 ```
 
-## 🔧 Configuration
+##  Configuration
 
 ### Environment Variables
 - `GEMINI_API_KEY` - Your Google Gemini API key (required)
@@ -117,7 +115,7 @@ drdo_docxsummarizer/
 - Location: Project root directory
 - Backup: Copy the `.db` file to preserve data
 
-## 🚀 Manual Service Startup
+##  Manual Service Startup
 
 If you prefer to start services manually:
 
@@ -133,13 +131,13 @@ venv\Scripts\Activate.ps1
 uvicorn fastapi_app:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## 📊 API Documentation
+##  API Documentation
 
 - **Interactive Docs**: http://localhost:8000/docs
 - **Alternative Docs**: http://localhost:8000/redoc
 - **Health Check**: http://localhost:8000/health
 
-## 🆕 What's New
+## What's New
 
 ### Database Integration
 - ✅ Automatic summary storage
@@ -154,7 +152,7 @@ uvicorn fastapi_app:app --reload --host 0.0.0.0 --port 8000
 - ✅ Comprehensive metadata
 - ✅ Error handling and validation
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -162,11 +160,9 @@ uvicorn fastapi_app:app --reload --host 0.0.0.0 --port 8000
 4. Test thoroughly
 5. Submit a pull request
 
-## 📄 License
+##  License
 
 This project is open source and available under the MIT License.
 
 ---
-
-**Built with ❤️ using Streamlit, FastAPI, Google Gemini AI, and SQLite**
 
