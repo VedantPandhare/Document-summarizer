@@ -5,14 +5,14 @@ A powerful AI-powered document summarization system built with Streamlit, FastAP
 
 ##  Features
 
-- ** AI-Powered Summarization**: Uses Google Gemini AI for intelligent document analysis
-- ** Multi-Format Support**: PDF, DOCX, TXT, HTML, and Markdown files
-- ** Multiple Summary Styles**: Bullet points, Abstract, and Detailed summaries
-- ** Database Storage**: SQLite database to save and retrieve user summaries
-- ** Quality Analysis**: Automatic summary quality assessment and feedback
-- ** Search & History**: Search through previous summaries and view history
-- ** User Statistics**: Track your summarization usage and performance
-- ** REST API**: FastAPI backend for programmatic access
+- **AI-Powered Summarization**: Uses Google Gemini AI for intelligent document analysis
+- **Multi-Format Support**: PDF, DOCX, TXT, HTML, and Markdown files
+- **Multiple Summary Styles**: Bullet points, Abstract, and Detailed summaries
+- **Database Storage**: SQLite database to save and retrieve user summaries
+- **Quality Analysis**: Automatic summary quality assessment and feedback
+- **Search & History**: Search through previous summaries and view history
+- **User Statistics**: Track your summarization usage and performance
+- **REST API**: FastAPI backend for programmatic access
 
 ## Quick Start (Windows PowerShell)
 
